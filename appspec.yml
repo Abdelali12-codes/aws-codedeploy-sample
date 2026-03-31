@@ -1,0 +1,69 @@
+# appspec.yml — EC2/On-Premises deployments
+# This file MUST be at the ROOT of your deployment artifact zip.
+# CodeDeploy reads it to know where to copy files and which scripts to run.
+
+version: 0.0
+os: linux
+
+# ── FILES SECTION ────────────────────────────────────────────────────────────
+# Tells CodeDeploy which files to copy and where to put them on the instance.
+files:
+  - source: /app          # path inside the artifact zip
+    destination: /var/www/my-app
+  # - source: /config/nginx.conf
+  #   destination: /etc/nginx/conf.d/
+
+# ── PERMISSIONS SECTION ──────────────────────────────────────────────────────
+# Set file ownership and permissions after copying.
+permissions:
+  - object: /var/www/my-app
+    owner: ec2-user
+    group: ec2-user
+    mode: "755"
+    type:
+      - directory
+      - file
+
+# ── HOOKS SECTION ────────────────────────────────────────────────────────────
+# Lifecycle event hooks — scripts run at specific points in the deployment.
+# Each hook has a timeout (seconds). Default is 3600. Max is 3600.
+# If a script exits non-zero → deployment FAILS and rolls back.
+#
+# FULL EC2 HOOK ORDER:
+#
+#  ApplicationStop          → stop the CURRENTLY running app (old version)
+#  DownloadBundle           → CodeDeploy downloads the artifact (no script)
+#  BeforeInstall            → pre-install tasks (backup, clean dirs)
+#  Install                  → CodeDeploy copies files (no script)
+#  AfterInstall             → post-copy tasks (set permissions, config)
+#  ApplicationStart         → start the NEW version of the app
+#  ValidateService          → verify the app is healthy (smoke test)
+#
+# Note: BeforeBlockTraffic / AfterBlockTraffic / BeforeAllowTraffic /
+#       AfterAllowTraffic are only available when an ELB is attached.
+
+hooks:
+  ApplicationStop:
+    - location: scripts/stop_app.sh
+      timeout: 30
+      runas: root
+
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      timeout: 60
+      runas: root
+
+  AfterInstall:
+    - location: scripts/after_install.sh
+      timeout: 60
+      runas: root
+
+  ApplicationStart:
+    - location: scripts/start_app.sh
+      timeout: 30
+      runas: root
+
+  ValidateService:
+    - location: scripts/validate.sh
+      timeout: 60
+      runas: root

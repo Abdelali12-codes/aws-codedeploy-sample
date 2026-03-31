@@ -1,0 +1,12 @@
+[Unit]
+Description=My App
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/var/www/my-app
+ExecStart=/usr/bin/python3 main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
