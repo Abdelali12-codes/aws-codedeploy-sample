@@ -4,4 +4,4 @@
 set -e
 cd /var/www/my-app
 pip install -r requirements.txt
-chown -R ec2-user:ec2-user /var/www/my-app
+chown -R ubuntu:ubuntu /var/www/my-app
