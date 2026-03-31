@@ -20,7 +20,7 @@ After=network.target
 
 [Service]
 WorkingDirectory=/var/www/my-app
-ExecStart=/var/www/my-app/.venv/bin/python app.py
+ExecStart=/var/www/my-app/.venv/bin/python main.py
 Restart=always
 User=ubuntu
 
