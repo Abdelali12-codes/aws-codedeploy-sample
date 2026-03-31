@@ -8,7 +8,7 @@ def health():
 
 @app.route("/")
 def index():
-    return jsonify({"message": "Hello from EC2 deployment v5"})
+    return jsonify({"message": "Hello from EC2 deployment v6"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
