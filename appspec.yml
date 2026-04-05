@@ -1,20 +1,61 @@
-# appspec.yml — EC2/On-Premises deployments
-# This file MUST be at the ROOT of your deployment artifact zip.
-# CodeDeploy reads it to know where to copy files and which scripts to run.
+# appspec.yml — Demonstrating file_exists_behavior: OVERWRITE / RETAIN / DISALLOW
+#
+# USE CASE: Hotfix files go missing after failed deployment + auto-rollback
+#
+# WHAT HAPPENED (the bug):
+#   Revision 1 deployed → app running fine
+#   Developer manually uploads hotfix/ files directly to instances (not in revision)
+#   Revision 2 is released (includes hotfix/ files) → deployment FAILS
+#   CodeDeploy auto-rolls back to Revision 1
+#   Revision 1 appspec has no hotfix/ entry → CodeDeploy removes hotfix/ files
+#   App breaks because hotfix files are gone
+#
+# WHY IT HAPPENED:
+#   Default file_exists_behavior is OVERWRITE.
+#   On rollback, CodeDeploy re-deploys Revision 1 which has no hotfix/ entry.
+#   Files not in the revision are REMOVED from the instance during rollback.
+#   The manually uploaded files had no protection — they were never part of
+#   any revision, so rollback had no way to preserve them.
+#
+# LAYER 1 FIX — Immediate (partial protection, forward deploy only):
+#   Add file_exists_behavior: RETAIN on the hotfix/ entry in the NEW revision.
+#   This prevents OVERWRITE during a forward deploy if files already exist.
+#   BUT: if rollback happens, the OLD appspec (Revision 1) runs — it has no
+#   RETAIN rule for hotfix/ → files are still removed on rollback.
+#
+# LAYER 2 FIX — Permanent (the real fix):
+#   ALWAYS include hotfix files in the revision from the start.
+#   Never manually upload files to instances as a deployment strategy.
+#   The revision is the single source of truth for all instance files.
+#   For urgent hotfixes: create a new revision that includes the fix and
+#   deploy it through the pipeline — do not bypass CodeDeploy.
 
 version: 0.0
 os: linux
 
-# ── FILES SECTION ────────────────────────────────────────────────────────────
-# Tells CodeDeploy which files to copy and where to put them on the instance.
 files:
-  - source: /app          # path inside the artifact zip
+  # ── OVERWRITE (default) ───────────────────────────────────────────────────
+  # App code — always replace with the latest revision.
+  - source: /app
     destination: /var/www/my-app
-  # - source: /config/nginx.conf
-  #   destination: /etc/nginx/conf.d/
+    file_exists_behavior: OVERWRITE
 
-# ── PERMISSIONS SECTION ──────────────────────────────────────────────────────
-# Set file ownership and permissions after copying.
+  # ── RETAIN ────────────────────────────────────────────────────────────────
+  # hotfix_patch.py lives inside app/ and is deployed with OVERWRITE above.
+  # To demonstrate RETAIN: we add a second entry specifically for this file
+  # so CodeDeploy keeps any instance-level edits to it across deployments.
+  # NOTE: when two entries target the same file, the LAST matching entry wins.
+  - source: /app/hotfix_patch.py
+    destination: /var/www/my-app
+    file_exists_behavior: RETAIN
+
+  # ── DISALLOW ──────────────────────────────────────────────────────────────
+  # Sentinel lock file written by stop_app.sh.
+  # Fails deployment immediately if the app was not stopped cleanly.
+  - source: /config/deploy.lock
+    destination: /var/run/my-app
+    file_exists_behavior: DISALLOW
+
 permissions:
   - object: /var/www/my-app
     owner: ubuntu
@@ -23,24 +64,6 @@ permissions:
     type:
       - directory
       - file
-
-# ── HOOKS SECTION ────────────────────────────────────────────────────────────
-# Lifecycle event hooks — scripts run at specific points in the deployment.
-# Each hook has a timeout (seconds). Default is 3600. Max is 3600.
-# If a script exits non-zero → deployment FAILS and rolls back.
-#
-# FULL EC2 HOOK ORDER:
-#
-#  ApplicationStop          → stop the CURRENTLY running app (old version)
-#  DownloadBundle           → CodeDeploy downloads the artifact (no script)
-#  BeforeInstall            → pre-install tasks (backup, clean dirs)
-#  Install                  → CodeDeploy copies files (no script)
-#  AfterInstall             → post-copy tasks (set permissions, config)
-#  ApplicationStart         → start the NEW version of the app
-#  ValidateService          → verify the app is healthy (smoke test)
-#
-# Note: BeforeBlockTraffic / AfterBlockTraffic / BeforeAllowTraffic /
-#       AfterAllowTraffic are only available when an ELB is attached.
 
 hooks:
   ApplicationStop:
