@@ -11,21 +11,21 @@
     },
     "CodeDeployEC2Stack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://unknown-account/unknown-region",
+      "environment": "aws://unknown-account/us-east-2",
       "properties": {
         "templateFile": "CodeDeployEC2Stack.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6a295a9f20b246f8d23c0858c6d0351febbebed62df6e6e173464c779677bdde.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2/877b8fec4dd23d0d9821763db67723b553aea4a6415d0a2ea6fbe3bf2450c7c9.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "CodeDeployEC2Stack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-2",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -130,10 +130,10 @@
             "data": "ApplicationD9CED6CE"
           }
         ],
-        "/CodeDeployEC2Stack/DeploymentGroup/Role/Resource": [
+        "/CodeDeployEC2Stack/CodeDeployRole/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "DeploymentGroupRoleC40B98DA"
+            "data": "CodeDeployRole12BEECBE"
           }
         ],
         "/CodeDeployEC2Stack/DeploymentGroup/Resource": [
@@ -158,48 +158,6 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "InstanceId"
-          }
-        ],
-        "/CodeDeployEC2Stack/ArtifactBucket/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "ArtifactBucket7410C9EF"
-          }
-        ],
-        "/CodeDeployEC2Stack/ArtifactBucket/Policy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "ArtifactBucketPolicy4B4B7752"
-          }
-        ],
-        "/CodeDeployEC2Stack/ArtifactBucket/AutoDeleteObjectsCustomResource/Default": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "ArtifactBucketAutoDeleteObjectsCustomResource0BB47FD6"
-          }
-        ],
-        "/CodeDeployEC2Stack/LatestNodeRuntimeMap": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "LatestNodeRuntimeMap"
-          }
-        ],
-        "/CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
-          {
-            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
-            "data": true
-          }
-        ],
-        "/CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
-          }
-        ],
-        "/CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
           }
         ],
         "/CodeDeployEC2Stack/BuildRole/Resource": [
@@ -242,12 +200,6 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "CDKMetadata"
-          }
-        ],
-        "/CodeDeployEC2Stack/CDKMetadata/Condition": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CDKMetadataAvailable"
           }
         ],
         "/CodeDeployEC2Stack/BootstrapVersion": [

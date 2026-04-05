@@ -3,5 +3,7 @@ import aws_cdk as cdk
 from stack import CodeDeployEC2Stack
 
 app = cdk.App()
-CodeDeployEC2Stack(app, "CodeDeployEC2Stack")
+CodeDeployEC2Stack(app, "CodeDeployEC2Stack",
+                   env=cdk.Environment(region="us-east-2"), 
+                   )
 app.synth()

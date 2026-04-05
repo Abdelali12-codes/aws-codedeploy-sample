@@ -51,7 +51,8 @@
                           ]
                         ]
                       }
-                    ]
+                    ],
+                    "roleName": "ec2-codedeploy-instance-role"
                   }
                 },
                 "constructInfo": {
@@ -510,7 +511,7 @@
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::CodeDeploy::Application",
                   "aws:cdk:cloudformation:props": {
-                    "applicationName": "my-ec2-app",
+                    "applicationName": "ec2-app",
                     "computePlatform": "Server"
                   }
                 },
@@ -525,67 +526,68 @@
               "version": "2.170.0"
             }
           },
+          "CodeDeployRole": {
+            "id": "CodeDeployRole",
+            "path": "CodeDeployEC2Stack/CodeDeployRole",
+            "children": {
+              "ImportCodeDeployRole": {
+                "id": "ImportCodeDeployRole",
+                "path": "CodeDeployEC2Stack/CodeDeployRole/ImportCodeDeployRole",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.170.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "CodeDeployEC2Stack/CodeDeployRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "codedeploy.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "managedPolicyArns": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSCodeDeployRole"
+                          ]
+                        ]
+                      }
+                    ],
+                    "roleName": "ec2-codedeploy-service-role"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.170.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.170.0"
+            }
+          },
           "DeploymentGroup": {
             "id": "DeploymentGroup",
             "path": "CodeDeployEC2Stack/DeploymentGroup",
             "children": {
-              "Role": {
-                "id": "Role",
-                "path": "CodeDeployEC2Stack/DeploymentGroup/Role",
-                "children": {
-                  "ImportRole": {
-                    "id": "ImportRole",
-                    "path": "CodeDeployEC2Stack/DeploymentGroup/Role/ImportRole",
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.Resource",
-                      "version": "2.170.0"
-                    }
-                  },
-                  "Resource": {
-                    "id": "Resource",
-                    "path": "CodeDeployEC2Stack/DeploymentGroup/Role/Resource",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
-                      "aws:cdk:cloudformation:props": {
-                        "assumeRolePolicyDocument": {
-                          "Statement": [
-                            {
-                              "Action": "sts:AssumeRole",
-                              "Effect": "Allow",
-                              "Principal": {
-                                "Service": "codedeploy.amazonaws.com"
-                              }
-                            }
-                          ],
-                          "Version": "2012-10-17"
-                        },
-                        "managedPolicyArns": [
-                          {
-                            "Fn::Join": [
-                              "",
-                              [
-                                "arn:",
-                                {
-                                  "Ref": "AWS::Partition"
-                                },
-                                ":iam::aws:policy/service-role/AWSCodeDeployRole"
-                              ]
-                            ]
-                          }
-                        ]
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
-                      "version": "2.170.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_iam.Role",
-                  "version": "2.170.0"
-                }
-              },
               "Bucket": {
                 "id": "Bucket",
                 "path": "CodeDeployEC2Stack/DeploymentGroup/Bucket",
@@ -611,7 +613,7 @@
                       ]
                     },
                     "deploymentConfigName": "CodeDeployDefault.OneAtATime",
-                    "deploymentGroupName": "my-ec2-deployment-group",
+                    "deploymentGroupName": "ec2-deployment-group",
                     "ec2TagSet": {
                       "ec2TagSetList": [
                         {
@@ -627,7 +629,7 @@
                     },
                     "serviceRoleArn": {
                       "Fn::GetAtt": [
-                        "DeploymentGroupRoleC40B98DA",
+                        "CodeDeployRole12BEECBE",
                         "Arn"
                       ]
                     }
@@ -671,162 +673,8 @@
           "ArtifactBucket": {
             "id": "ArtifactBucket",
             "path": "CodeDeployEC2Stack/ArtifactBucket",
-            "children": {
-              "Resource": {
-                "id": "Resource",
-                "path": "CodeDeployEC2Stack/ArtifactBucket/Resource",
-                "attributes": {
-                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
-                  "aws:cdk:cloudformation:props": {
-                    "tags": [
-                      {
-                        "key": "aws-cdk:auto-delete-objects",
-                        "value": "true"
-                      }
-                    ],
-                    "versioningConfiguration": {
-                      "status": "Enabled"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
-                  "version": "2.170.0"
-                }
-              },
-              "Policy": {
-                "id": "Policy",
-                "path": "CodeDeployEC2Stack/ArtifactBucket/Policy",
-                "children": {
-                  "Resource": {
-                    "id": "Resource",
-                    "path": "CodeDeployEC2Stack/ArtifactBucket/Policy/Resource",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
-                      "aws:cdk:cloudformation:props": {
-                        "bucket": {
-                          "Ref": "ArtifactBucket7410C9EF"
-                        },
-                        "policyDocument": {
-                          "Statement": [
-                            {
-                              "Action": [
-                                "s3:PutBucketPolicy",
-                                "s3:GetBucket*",
-                                "s3:List*",
-                                "s3:DeleteObject*"
-                              ],
-                              "Effect": "Allow",
-                              "Principal": {
-                                "AWS": {
-                                  "Fn::GetAtt": [
-                                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
-                                    "Arn"
-                                  ]
-                                }
-                              },
-                              "Resource": [
-                                {
-                                  "Fn::GetAtt": [
-                                    "ArtifactBucket7410C9EF",
-                                    "Arn"
-                                  ]
-                                },
-                                {
-                                  "Fn::Join": [
-                                    "",
-                                    [
-                                      {
-                                        "Fn::GetAtt": [
-                                          "ArtifactBucket7410C9EF",
-                                          "Arn"
-                                        ]
-                                      },
-                                      "/*"
-                                    ]
-                                  ]
-                                }
-                              ]
-                            }
-                          ],
-                          "Version": "2012-10-17"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
-                      "version": "2.170.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
-                  "version": "2.170.0"
-                }
-              },
-              "AutoDeleteObjectsCustomResource": {
-                "id": "AutoDeleteObjectsCustomResource",
-                "path": "CodeDeployEC2Stack/ArtifactBucket/AutoDeleteObjectsCustomResource",
-                "children": {
-                  "Default": {
-                    "id": "Default",
-                    "path": "CodeDeployEC2Stack/ArtifactBucket/AutoDeleteObjectsCustomResource/Default",
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.CfnResource",
-                      "version": "2.170.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CustomResource",
-                  "version": "2.170.0"
-                }
-              }
-            },
             "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_s3.Bucket",
-              "version": "2.170.0"
-            }
-          },
-          "LatestNodeRuntimeMap": {
-            "id": "LatestNodeRuntimeMap",
-            "path": "CodeDeployEC2Stack/LatestNodeRuntimeMap",
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CfnMapping",
-              "version": "2.170.0"
-            }
-          },
-          "Custom::S3AutoDeleteObjectsCustomResourceProvider": {
-            "id": "Custom::S3AutoDeleteObjectsCustomResourceProvider",
-            "path": "CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider",
-            "children": {
-              "Staging": {
-                "id": "Staging",
-                "path": "CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Staging",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.AssetStaging",
-                  "version": "2.170.0"
-                }
-              },
-              "Role": {
-                "id": "Role",
-                "path": "CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CfnResource",
-                  "version": "2.170.0"
-                }
-              },
-              "Handler": {
-                "id": "Handler",
-                "path": "CodeDeployEC2Stack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CfnResource",
-                  "version": "2.170.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.CustomResourceProviderBase",
+              "fqn": "aws-cdk-lib.aws_s3.BucketBase",
               "version": "2.170.0"
             }
           },
@@ -859,7 +707,8 @@
                         }
                       ],
                       "Version": "2012-10-17"
-                    }
+                    },
+                    "roleName": "ec2-codebuild-role"
                   }
                 },
                 "constructInfo": {
@@ -895,22 +744,26 @@
                               "Effect": "Allow",
                               "Resource": [
                                 {
-                                  "Fn::GetAtt": [
-                                    "ArtifactBucket7410C9EF",
-                                    "Arn"
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      "arn:",
+                                      {
+                                        "Ref": "AWS::Partition"
+                                      },
+                                      ":s3:::python-app-codepipeline-artifact-03312026"
+                                    ]
                                   ]
                                 },
                                 {
                                   "Fn::Join": [
                                     "",
                                     [
+                                      "arn:",
                                       {
-                                        "Fn::GetAtt": [
-                                          "ArtifactBucket7410C9EF",
-                                          "Arn"
-                                        ]
+                                        "Ref": "AWS::Partition"
                                       },
-                                      "/*"
+                                      ":s3:::python-app-codepipeline-artifact-03312026/*"
                                     ]
                                   ]
                                 }
@@ -967,7 +820,7 @@
                   "image": "aws/codebuild/standard:7.0",
                   "type": "LINUX_CONTAINER"
                 },
-                "name": "my-ec2-build",
+                "name": "ec2-build",
                 "serviceRole": {
                   "Fn::GetAtt": [
                     "BuildRole41B77417",
@@ -1014,7 +867,8 @@
                         }
                       ],
                       "Version": "2012-10-17"
-                    }
+                    },
+                    "roleName": "ec2-codepipeline-role"
                   }
                 },
                 "constructInfo": {
@@ -1050,22 +904,26 @@
                               "Effect": "Allow",
                               "Resource": [
                                 {
-                                  "Fn::GetAtt": [
-                                    "ArtifactBucket7410C9EF",
-                                    "Arn"
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      "arn:",
+                                      {
+                                        "Ref": "AWS::Partition"
+                                      },
+                                      ":s3:::python-app-codepipeline-artifact-03312026"
+                                    ]
                                   ]
                                 },
                                 {
                                   "Fn::Join": [
                                     "",
                                     [
+                                      "arn:",
                                       {
-                                        "Fn::GetAtt": [
-                                          "ArtifactBucket7410C9EF",
-                                          "Arn"
-                                        ]
+                                        "Ref": "AWS::Partition"
                                       },
-                                      "/*"
+                                      ":s3:::python-app-codepipeline-artifact-03312026/*"
                                     ]
                                   ]
                                 }
@@ -1125,12 +983,10 @@
               "aws:cdk:cloudformation:type": "AWS::CodePipeline::Pipeline",
               "aws:cdk:cloudformation:props": {
                 "artifactStore": {
-                  "location": {
-                    "Ref": "ArtifactBucket7410C9EF"
-                  },
+                  "location": "python-app-codepipeline-artifact-03312026",
                   "type": "S3"
                 },
-                "name": "my-ec2-pipeline",
+                "name": "ec2-pipeline",
                 "restartExecutionOnUpdate": false,
                 "roleArn": {
                   "Fn::GetAtt": [
@@ -1177,7 +1033,7 @@
                         },
                         "name": "Build",
                         "configuration": {
-                          "ProjectName": "my-ec2-build"
+                          "ProjectName": "ec2-build"
                         },
                         "inputArtifacts": [
                           {
@@ -1239,14 +1095,6 @@
                 "path": "CodeDeployEC2Stack/CDKMetadata/Default",
                 "constructInfo": {
                   "fqn": "aws-cdk-lib.CfnResource",
-                  "version": "2.170.0"
-                }
-              },
-              "Condition": {
-                "id": "Condition",
-                "path": "CodeDeployEC2Stack/CDKMetadata/Condition",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.CfnCondition",
                   "version": "2.170.0"
                 }
               }

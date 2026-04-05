@@ -56,6 +56,7 @@ class CodeDeployEC2Stack(cdk.Stack):
         # ── IAM role for EC2 instance ───────────────────────────────────
         instance_role = iam.Role(
             self, "InstanceRole",
+            role_name="ec2-codedeploy-instance-role",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"),
@@ -102,10 +103,23 @@ class CodeDeployEC2Stack(cdk.Stack):
             application_name="ec2-app",
         )
 
+        codedeploy_role = iam.Role(
+            self, "CodeDeployRole",
+            role_name="ec2-codedeploy-service-role",
+            assumed_by=iam.ServicePrincipal("codedeploy.amazonaws.com"),
+            # Do NOT attach AWSCodeDeployRole here manually.
+            # ServerDeploymentGroup automatically attaches
+            # arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+            # to whatever role you pass via the role= parameter.
+            # Attaching it here too causes a duplicate ARN in
+            # ManagedPolicyArns which fails CloudFormation validation.
+        )
+
         deployment_group = codedeploy.ServerDeploymentGroup(
             self, "DeploymentGroup",
             application=application,
             deployment_group_name="ec2-deployment-group",
+            role=codedeploy_role,
             ec2_instance_tags=codedeploy.InstanceTagSet({"Environment": ["production"]}),
             deployment_config=codedeploy.ServerDeploymentConfig.ONE_AT_A_TIME,
             auto_rollback=codedeploy.AutoRollbackConfig(
@@ -130,9 +144,10 @@ class CodeDeployEC2Stack(cdk.Stack):
         # ── CodeBuild ───────────────────────────────────────────────────
         build_role = iam.Role(
             self, "BuildRole",
+            role_name="ec2-codebuild-role",
             assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
         )
-        artifact_bucket.grant_read(build_role)
+        artifact_bucket.grant_read_write(build_role)
         build_role.add_to_policy(iam.PolicyStatement(
             actions=["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
             resources=["*"],
@@ -140,7 +155,7 @@ class CodeDeployEC2Stack(cdk.Stack):
 
         build_project = codebuild.CfnProject(
             self, "BuildProject",
-            name="my-ec2-build",
+            name="ec2-build",
             service_role=build_role.role_arn,
             artifacts=codebuild.CfnProject.ArtifactsProperty(type="CODEPIPELINE"),
             environment=codebuild.CfnProject.EnvironmentProperty(
@@ -171,6 +186,7 @@ class CodeDeployEC2Stack(cdk.Stack):
         # ── Pipeline role ───────────────────────────────────────────────
         pipeline_role = iam.Role(
             self, "PipelineRole",
+            role_name="ec2-codepipeline-role",
             assumed_by=iam.ServicePrincipal("codepipeline.amazonaws.com"),
         )
         artifact_bucket.grant_read_write(pipeline_role)
@@ -190,7 +206,7 @@ class CodeDeployEC2Stack(cdk.Stack):
         # ── CfnPipeline ─────────────────────────────────────────────────
         codepipeline.CfnPipeline(
             self, "Pipeline",
-            name="my-ec2-pipeline",
+            name="ec2-pipeline",
             role_arn=pipeline_role.role_arn,
             artifact_store=codepipeline.CfnPipeline.ArtifactStoreProperty(
                 type="S3",
