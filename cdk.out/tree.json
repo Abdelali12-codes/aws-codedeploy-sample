@@ -947,6 +947,11 @@
                               ],
                               "Effect": "Allow",
                               "Resource": "*"
+                            },
+                            {
+                              "Action": "codepipeline:StartPipelineExecution",
+                              "Effect": "Allow",
+                              "Resource": "*"
                             }
                           ],
                           "Version": "2012-10-17"
@@ -1083,6 +1088,44 @@
             },
             "constructInfo": {
               "fqn": "aws-cdk-lib.aws_codepipeline.CfnPipeline",
+              "version": "2.170.0"
+            }
+          },
+          "PipelineWebhook": {
+            "id": "PipelineWebhook",
+            "path": "CodeDeployEC2Stack/PipelineWebhook",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::CodePipeline::Webhook",
+              "aws:cdk:cloudformation:props": {
+                "authentication": "GITHUB_HMAC",
+                "authenticationConfiguration": {
+                  "secretToken": "{{resolve:secretsmanager:github-access-token:SecretString:::}}"
+                },
+                "filters": [
+                  {
+                    "jsonPath": "$.ref",
+                    "matchEquals": "refs/heads/master"
+                  }
+                ],
+                "name": "ec2-pipeline-webhook",
+                "registerWithThirdParty": true,
+                "targetAction": "GitHub_Source",
+                "targetPipeline": {
+                  "Ref": "Pipeline"
+                },
+                "targetPipelineVersion": 1
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_codepipeline.CfnWebhook",
+              "version": "2.170.0"
+            }
+          },
+          "WebhookUrl": {
+            "id": "WebhookUrl",
+            "path": "CodeDeployEC2Stack/WebhookUrl",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
               "version": "2.170.0"
             }
           },

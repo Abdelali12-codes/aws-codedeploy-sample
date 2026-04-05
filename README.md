@@ -111,3 +111,42 @@ pip install -r requirements.txt
 cdk bootstrap
 cdk deploy
 ```
+
+---
+
+## Prerequisites — Secrets Manager
+Before deploying, create two secrets in AWS Secrets Manager:
+
+```bash
+# GitHub OAuth token (repo + admin:repo_hook scopes required)
+aws secretsmanager create-secret \
+  --name github-access-token \
+  --secret-string "<your-github-token>"
+
+# Webhook secret — any random string, GitHub uses it to sign payloads
+aws secretsmanager create-secret \
+  --name github-webhook-secret \
+  --secret-string "<random-secret-string>"
+```
+
+---
+
+## Webhook — how it works
+```
+git push origin master
+  └── GitHub sends HTTP POST to CodePipeline webhook URL
+        └── Payload signed with HMAC-SHA1 using github-webhook-secret
+              └── CodePipeline verifies signature
+                    └── Pipeline execution starts immediately
+```
+
+`PollForSourceChanges: False` in the Source action is required — otherwise
+CodePipeline polls every minute AND the webhook triggers it, causing
+duplicate executions.
+
+### Webhook filters
+| JsonPath | MatchEquals | Triggers on |
+|---|---|---|
+| `$.ref` | `refs/heads/master` | push to master |
+| `$.ref` | `refs/heads/main` | push to main |
+| `$.ref` | `refs/heads/*` | push to any branch |

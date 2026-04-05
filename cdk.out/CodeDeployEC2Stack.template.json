@@ -615,6 +615,11 @@
        ],
        "Effect": "Allow",
        "Resource": "*"
+      },
+      {
+       "Action": "codepipeline:StartPipelineExecution",
+       "Effect": "Allow",
+       "Resource": "*"
       }
      ],
      "Version": "2012-10-17"
@@ -735,10 +740,35 @@
     "aws:cdk:path": "CodeDeployEC2Stack/Pipeline"
    }
   },
+  "PipelineWebhook": {
+   "Type": "AWS::CodePipeline::Webhook",
+   "Properties": {
+    "Authentication": "GITHUB_HMAC",
+    "AuthenticationConfiguration": {
+     "SecretToken": "{{resolve:secretsmanager:github-access-token:SecretString:::}}"
+    },
+    "Filters": [
+     {
+      "JsonPath": "$.ref",
+      "MatchEquals": "refs/heads/master"
+     }
+    ],
+    "Name": "ec2-pipeline-webhook",
+    "RegisterWithThirdParty": true,
+    "TargetAction": "GitHub_Source",
+    "TargetPipeline": {
+     "Ref": "Pipeline"
+    },
+    "TargetPipelineVersion": 1
+   },
+   "Metadata": {
+    "aws:cdk:path": "CodeDeployEC2Stack/PipelineWebhook"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12QTW/CMAyGfwv3kPFxmHYEJiFOq9qJ6+SmRpimSZQ4oKrqf5/alI/tZPvxK7+2V3L5vpCLGdzCXFX1XFMpu4JB1QJu4acjaGSXW41idzL3eDCBwSjMvD2RRpFZTaodOinrBaqV7I5ODeyY7UQWS02qiKVBHtgzy21k/IYyTU78yTYhWEXAZM1DLDJPV2B8zjgYRm+Q98B4g3YynaoNM6hzg4ZFgSp64nbvbXSj3R9wP+v1xF4oW2GFTttWdgX6K/qNc5rUY6nXMgk+R/lg+XD6h3oR1nIbVY28hYCjSRlJV3J4orcXVDxCRw41GRz5lPcix2CjT5tm4KFBRj8UX5FdTH+dJL3IWj5b87aWy6X8mF0C0dxHw9SgzFP8BdGaQEkFAgAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/11QTW/CMAz9LdxDxsdh2hGYhDgtaid2nNLUCNM0iRIHVFX971OaAttO9nt+es/2ii9fF3wxk7cwV3Uz11jxviSpGiZv4btH2fK+sBrY7mTu9WACSaNAeHtCDUxYjapLk9wNDNSK90enEncUOyZipVGVsTJAiXt2hY0En7LKzpl/cpsQrEJJaM1DzITHqyR4ehwMgTdAe0lwk90UOqENkVTnFgyxElT0SN3e2+jGuD/E/azfJw5M2RpqcNp2vC/BX8FvnNOoHkv9hlnwPspT5CPpHzWwsObbqBqgrQwwhlQRdc3TE729gKKRdOhAowHep8EEkuEXVGdrm2FgBQQbfV5bSC9bIPAJfERyMT95kgxMdHS25mXNl0v+NrsExLmPhrAFXuT6A/7o5CsSAgAA"
    },
    "Metadata": {
     "aws:cdk:path": "CodeDeployEC2Stack/CDKMetadata/Default"
@@ -771,6 +801,9 @@
    "Value": {
     "Ref": "AppInstance13C82D50"
    }
+  },
+  "WebhookUrl": {
+   "Value": "See AWS Console → CodePipeline → ec2-pipeline → Settings → Webhook"
   }
  },
  "Rules": {
