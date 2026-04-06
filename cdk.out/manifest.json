@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-2",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-2",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2/33afe29f7dc7fc8a03cc2c005cd401dbfc1f9db41d8464153d5bfd95a85fc6cf.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2/3bbdb366beedc8f7e481e794296c7f070836914c3daa41a6e1a50886c605cdd9.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -70,24 +70,6 @@
             "data": "VpcPublicSubnet1DefaultRoute3DA9E72A"
           }
         ],
-        "/CodeDeployEC2Stack/Vpc/IsolatedSubnet1/Subnet": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "VpcIsolatedSubnet1SubnetE48C5737"
-          }
-        ],
-        "/CodeDeployEC2Stack/Vpc/IsolatedSubnet1/RouteTable": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "VpcIsolatedSubnet1RouteTable4771E3E5"
-          }
-        ],
-        "/CodeDeployEC2Stack/Vpc/IsolatedSubnet1/RouteTableAssociation": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "VpcIsolatedSubnet1RouteTableAssociationD300FCBB"
-          }
-        ],
         "/CodeDeployEC2Stack/Vpc/IGW": [
           {
             "type": "aws:cdk:logicalId",
@@ -98,6 +80,24 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "VpcVPCGWBF912B6E"
+          }
+        ],
+        "/CodeDeployEC2Stack/Sg": [
+          {
+            "type": "aws:cdk:warning",
+            "data": "Ignoring Egress rule since 'allowAllOutbound' is set to true; To add customized rules, set allowAllOutbound=false on the SecurityGroup [ack: @aws-cdk/aws-ec2:ipv4IgnoreEgressRule]",
+            "trace": [
+              "Annotations.addMessage (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\jsii-kernel-W4dGIq\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:1608)",
+              "Annotations.addWarningV2 (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\jsii-kernel-W4dGIq\\node_modules\\aws-cdk-lib\\core\\lib\\annotations.js:1:825)",
+              "SecurityGroup.addEgressRule (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\jsii-kernel-W4dGIq\\node_modules\\aws-cdk-lib\\aws-ec2\\lib\\security-group.js:1:7618)",
+              "C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\tmp8x79pop8\\lib\\program.js:294:171",
+              "Kernel._Kernel_ensureSync (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\tmp8x79pop8\\lib\\program.js:916:24)",
+              "Kernel.invoke (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\tmp8x79pop8\\lib\\program.js:294:102)",
+              "KernelHost.processRequest (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\tmp8x79pop8\\lib\\program.js:15479:36)",
+              "KernelHost.run (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\tmp8x79pop8\\lib\\program.js:15439:22)",
+              "Immediate._onImmediate (C:\\Users\\ABDELA~1\\AppData\\Local\\Temp\\tmp8x79pop8\\lib\\program.js:15440:45)",
+              "process.processImmediate (node:internal/timers:491:21)"
+            ]
           }
         ],
         "/CodeDeployEC2Stack/Sg/Resource": [

@@ -50,6 +50,18 @@
                             ":iam::aws:policy/AmazonSSMManagedInstanceCore"
                           ]
                         ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/AmazonS3ReadOnlyAccess"
+                          ]
+                        ]
                       }
                     ],
                     "roleName": "ec2-codedeploy-instance-role"
@@ -76,7 +88,7 @@
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::EC2::VPC",
                   "aws:cdk:cloudformation:props": {
-                    "cidrBlock": "10.0.0.0/16",
+                    "cidrBlock": "10.10.0.0/16",
                     "enableDnsHostnames": true,
                     "enableDnsSupport": true,
                     "instanceTenancy": "default",
@@ -111,7 +123,7 @@
                             }
                           ]
                         },
-                        "cidrBlock": "10.0.0.0/17",
+                        "cidrBlock": "10.10.0.0/24",
                         "mapPublicIpOnLaunch": true,
                         "tags": [
                           {
@@ -209,105 +221,6 @@
                 },
                 "constructInfo": {
                   "fqn": "aws-cdk-lib.aws_ec2.PublicSubnet",
-                  "version": "2.170.0"
-                }
-              },
-              "IsolatedSubnet1": {
-                "id": "IsolatedSubnet1",
-                "path": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1",
-                "children": {
-                  "Subnet": {
-                    "id": "Subnet",
-                    "path": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1/Subnet",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::EC2::Subnet",
-                      "aws:cdk:cloudformation:props": {
-                        "availabilityZone": {
-                          "Fn::Select": [
-                            0,
-                            {
-                              "Fn::GetAZs": ""
-                            }
-                          ]
-                        },
-                        "cidrBlock": "10.0.128.0/17",
-                        "mapPublicIpOnLaunch": false,
-                        "tags": [
-                          {
-                            "key": "aws-cdk:subnet-name",
-                            "value": "Isolated"
-                          },
-                          {
-                            "key": "aws-cdk:subnet-type",
-                            "value": "Isolated"
-                          },
-                          {
-                            "key": "Name",
-                            "value": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1"
-                          }
-                        ],
-                        "vpcId": {
-                          "Ref": "Vpc8378EB38"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnet",
-                      "version": "2.170.0"
-                    }
-                  },
-                  "Acl": {
-                    "id": "Acl",
-                    "path": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1/Acl",
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.Resource",
-                      "version": "2.170.0"
-                    }
-                  },
-                  "RouteTable": {
-                    "id": "RouteTable",
-                    "path": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1/RouteTable",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::EC2::RouteTable",
-                      "aws:cdk:cloudformation:props": {
-                        "tags": [
-                          {
-                            "key": "Name",
-                            "value": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1"
-                          }
-                        ],
-                        "vpcId": {
-                          "Ref": "Vpc8378EB38"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_ec2.CfnRouteTable",
-                      "version": "2.170.0"
-                    }
-                  },
-                  "RouteTableAssociation": {
-                    "id": "RouteTableAssociation",
-                    "path": "CodeDeployEC2Stack/Vpc/IsolatedSubnet1/RouteTableAssociation",
-                    "attributes": {
-                      "aws:cdk:cloudformation:type": "AWS::EC2::SubnetRouteTableAssociation",
-                      "aws:cdk:cloudformation:props": {
-                        "routeTableId": {
-                          "Ref": "VpcIsolatedSubnet1RouteTable4771E3E5"
-                        },
-                        "subnetId": {
-                          "Ref": "VpcIsolatedSubnet1SubnetE48C5737"
-                        }
-                      }
-                    },
-                    "constructInfo": {
-                      "fqn": "aws-cdk-lib.aws_ec2.CfnSubnetRouteTableAssociation",
-                      "version": "2.170.0"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_ec2.PrivateSubnet",
                   "version": "2.170.0"
                 }
               },
@@ -448,17 +361,23 @@
                       "Ref": "SsmParameterValueawsservicecanonicalubuntuserver2204stablecurrentamd64hvmebsgp2amiidC96584B6F00A464EAD1953AFF4B05118Parameter"
                     },
                     "instanceType": "t3.micro",
-                    "securityGroupIds": [
+                    "networkInterfaces": [
                       {
-                        "Fn::GetAtt": [
-                          "SgD4954771",
-                          "GroupId"
+                        "deviceIndex": "0",
+                        "associatePublicIpAddress": true,
+                        "subnetId": {
+                          "Ref": "VpcPublicSubnet1Subnet5C2D37C4"
+                        },
+                        "groupSet": [
+                          {
+                            "Fn::GetAtt": [
+                              "SgD4954771",
+                              "GroupId"
+                            ]
+                          }
                         ]
                       }
                     ],
-                    "subnetId": {
-                      "Ref": "VpcIsolatedSubnet1SubnetE48C5737"
-                    },
                     "tags": [
                       {
                         "key": "Environment",
@@ -470,7 +389,7 @@
                       }
                     ],
                     "userData": {
-                      "Fn::Base64": "#!/bin/bash\nexport DEBIAN_FRONTEND=noninteractive\napt-get update -qq\napt-get install -y -qq ruby wget python3 python3-pip python3-venv iproute2 curl\nwget -q https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install\nchmod +x ./install\n./install auto\nsystemctl enable codedeploy-agent\nsystemctl start codedeploy-agent\nmkdir -p /var/www/my-app/hotfix"
+                      "Fn::Base64": "#!/bin/bash\nset -e\nexec > /var/log/user-data.log 2>&1\nexport DEBIAN_FRONTEND=noninteractive\nwhile fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done\napt-get update -y\napt-get install -y ruby-full wget python3 python3-pip python3-venv iproute2 curl\nREGION=$(curl -sf http://169.254.169.254/latest/meta-data/placement/region)\nwget -O /tmp/codedeploy-install https://aws-codedeploy-${REGION}.s3.${REGION}.amazonaws.com/latest/install\nchmod +x /tmp/codedeploy-install\n/tmp/codedeploy-install auto\nsystemctl enable codedeploy-agent\nsystemctl start codedeploy-agent\nsystemctl is-active --quiet codedeploy-agent || { echo 'ERROR: codedeploy-agent failed to start'; exit 1; }\nmkdir -p /var/www/my-app\nmkdir -p /var/run/my-app"
                     }
                   }
                 },

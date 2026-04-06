@@ -59,29 +59,67 @@ class CodeDeployEC2Stack(cdk.Stack):
             role_name="ec2-codedeploy-instance-role",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
             managed_policies=[
+                # SSM: allows Session Manager access and agent communication
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"),
+                # S3 read: CodeDeploy agent downloads the revision bundle from S3
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess"),
             ],
         )
 
         # ── VPC + Ubuntu EC2 instance ───────────────────────────────────
-        vpc = ec2.Vpc(self, "Vpc", max_azs=1, nat_gateways=0)
+        vpc_cidr = self.node.try_get_context("vpc_cidr") or "10.10.0.0/16"
+        vpc = ec2.Vpc(self, "Vpc",
+            ip_addresses=ec2.IpAddresses.cidr(vpc_cidr),
+            max_azs=1,
+            nat_gateways=0,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(
+                    name="Public",
+                    subnet_type=ec2.SubnetType.PUBLIC,
+                    cidr_mask=24,
+                )
+            ],
+        )
 
         sg = ec2.SecurityGroup(self, "Sg", vpc=vpc)
         sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(8080))
         sg.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22))
+        # CodeDeploy agent calls the CodeDeploy service endpoint over HTTPS
+        # The instance needs outbound 443 — allowed by default on SG egress,
+        # but the VPC needs a route to the internet (NAT or IGW).
+        # For a public subnet with IGW, add a public IP to the instance.
+        sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443))
+        sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(80))
 
         user_data = ec2.UserData.for_linux()
         user_data.add_commands(
+            "set -e",
+            "exec > /var/log/user-data.log 2>&1",  # log everything for debugging
             "export DEBIAN_FRONTEND=noninteractive",
-            "apt-get update -qq",
-            "apt-get install -y -qq ruby wget python3 python3-pip python3-venv iproute2 curl",
-            "wget -q https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install",
-            "chmod +x ./install",
-            "./install auto",
+
+            # Wait for apt lock to be released (cloud-init may hold it on boot)
+            "while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done",
+
+            "apt-get update -y",
+            "apt-get install -y ruby-full wget python3 python3-pip python3-venv iproute2 curl",
+
+            # Install CodeDeploy agent
+            # The install script is region-specific — must match the instance region
+            "REGION=$(curl -sf http://169.254.169.254/latest/meta-data/placement/region)",
+            "wget -O /tmp/codedeploy-install https://aws-codedeploy-${REGION}.s3.${REGION}.amazonaws.com/latest/install",
+            "chmod +x /tmp/codedeploy-install",
+            "/tmp/codedeploy-install auto",
+
+            # Ensure agent is running and enabled on reboot
             "systemctl enable codedeploy-agent",
             "systemctl start codedeploy-agent",
-            # Pre-create the hotfix directory so RETAIN has something to protect
-            "mkdir -p /var/www/my-app/hotfix",
+
+            # Verify agent is running — fail user_data loudly if not
+            "systemctl is-active --quiet codedeploy-agent || { echo 'ERROR: codedeploy-agent failed to start'; exit 1; }",
+
+            # Pre-create app directories
+            "mkdir -p /var/www/my-app",
+            "mkdir -p /var/run/my-app",
         )
 
         instance = ec2.Instance(
@@ -91,6 +129,10 @@ class CodeDeployEC2Stack(cdk.Stack):
                 "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
             ),
             vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            # Public IP required so the instance can reach CodeDeploy + S3
+            # endpoints without a NAT gateway
+            associate_public_ip_address=True,
             role=instance_role,
             security_group=sg,
             user_data=user_data,

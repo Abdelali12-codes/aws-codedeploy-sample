@@ -1,7 +1,7 @@
 {
   "version": "38.0.1",
   "files": {
-    "33afe29f7dc7fc8a03cc2c005cd401dbfc1f9db41d8464153d5bfd95a85fc6cf": {
+    "3bbdb366beedc8f7e481e794296c7f070836914c3daa41a6e1a50886c605cdd9": {
       "source": {
         "path": "CodeDeployEC2Stack.template.json",
         "packaging": "file"
@@ -9,7 +9,7 @@
       "destinations": {
         "current_account-us-east-2": {
           "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-2",
-          "objectKey": "33afe29f7dc7fc8a03cc2c005cd401dbfc1f9db41d8464153d5bfd95a85fc6cf.json",
+          "objectKey": "3bbdb366beedc8f7e481e794296c7f070836914c3daa41a6e1a50886c605cdd9.json",
           "region": "us-east-2",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-2"
         }
