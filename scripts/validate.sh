@@ -56,3 +56,4 @@ fi
 echo "[$TIMESTAMP] ValidateService: hotfix file present on disk" >> $LOG
 
 echo "[$TIMESTAMP] ValidateService: all checks passed" >> $LOG
+exit 1
