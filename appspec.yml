@@ -38,7 +38,7 @@ files:
   # App code — always replace with the latest revision.
   - source: /app
     destination: /var/www/my-app
-    file_exists_behavior: OVERWRITE
+    file_exists_behavior: RETAIN
 
   # ── RETAIN ────────────────────────────────────────────────────────────────
   # hotfix_patch.py lives inside app/ and is deployed with OVERWRITE above.
