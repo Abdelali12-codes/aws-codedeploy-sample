@@ -49,12 +49,6 @@ files:
     destination: /var/www/my-app/hotfix
     file_exists_behavior: RETAIN
 
-  # ── DISALLOW ──────────────────────────────────────────────────────────────
-  # Sentinel lock file written by stop_app.sh.
-  # Fails deployment immediately if the app was not stopped cleanly.
-  - source: /config/deploy.lock
-    destination: /var/run/my-app
-    file_exists_behavior: DISALLOW
 
 permissions:
   - object: /var/www/my-app
