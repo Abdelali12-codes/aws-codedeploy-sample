@@ -45,8 +45,8 @@ files:
   # To demonstrate RETAIN: we add a second entry specifically for this file
   # so CodeDeploy keeps any instance-level edits to it across deployments.
   # NOTE: when two entries target the same file, the LAST matching entry wins.
-  - source: /app/hotfix_patch.py
-    destination: /var/www/my-app
+  - source: /hotfix
+    destination: /var/www/my-app/hotfix
     file_exists_behavior: RETAIN
 
   # ── DISALLOW ──────────────────────────────────────────────────────────────
