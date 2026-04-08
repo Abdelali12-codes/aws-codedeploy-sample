@@ -1,0 +1,7 @@
+{
+  "app": "python app.py",
+  "context": {
+    "artifact_bucket_name": "<BUCKET_NAME>",
+    "vpc_cidr": "10.10.0.0/16"
+  }
+}
